@@ -1,9 +1,19 @@
 from fastapi import FastAPI, HTTPException, Query
+from fastapi.middleware.cors import CORSMiddleware
 from typing import Optional
 import requests
 from requests.auth import HTTPBasicAuth
 
 app = FastAPI()
+
+# Add CORS middleware with correct instantiation
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Or restrict to specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/simplified-jira-issues")
 def get_simplified_issues(
@@ -12,14 +22,13 @@ def get_simplified_issues(
     api_token: str = Query(..., description="Your Jira API token")
 ):
     try:
-        response = requests.get(jira_url, auth=HTTPBasicAuth(email, api_token))
+        response = requests.get(jira_url, auth=HTTPBasicAuth(email, api_token), headers={"Accept": "application/json"})
 
         if response.status_code != 200:
             raise HTTPException(status_code=response.status_code, detail="Failed to fetch data from Jira")
 
         data = response.json()
 
-        # Process and simplify JSON
         table_data = []
         for issue in data.get("issues", []):
             fields = issue.get("fields", {})
