@@ -8,6 +8,7 @@ from pydantic import BaseModel
 from requests.auth import HTTPBasicAuth
 from pydantic_settings import BaseSettings
 from typing import List, Optional
+from datetime import datetime
 
 # --- SQLAlchemy Database Imports ---
 from sqlalchemy import create_engine, Column, Integer, String, Text, Enum, TIMESTAMP, ForeignKey, JSON
@@ -95,18 +96,16 @@ def get_db():
     finally:
         db.close()
 
-
-# --- Pydantic Response Models for Database Routes ---
 class GenerationRequestResponse(BaseModel):
     request_id: int
     request_type: str
     raw_input: str
     repository: Optional[str]
     assignee_email: Optional[str]
-    request_timestamp: str
+    request_timestamp: datetime  # CHANGED from str
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # UPDATED from orm_mode
 
 
 class ClassificationLogResponse(BaseModel):
@@ -116,10 +115,10 @@ class ClassificationLogResponse(BaseModel):
     decision: str
     rejection_reason: Optional[str]
     raw_response_json: Optional[dict]
-    processed_timestamp: str
+    processed_timestamp: datetime  # CHANGED from str
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # UPDATED from orm_mode
 
 
 class GeneratedTicketResponse(BaseModel):
@@ -131,17 +130,16 @@ class GeneratedTicketResponse(BaseModel):
     issue_type: str
     parent_issue_key: Optional[str]
     assignee_account_id: Optional[str]
-    creation_timestamp: str
+    creation_timestamp: datetime  # CHANGED from str
 
     class Config:
-        orm_mode = True
+        from_attributes = True  # UPDATED from orm_mode
 
 
 class FullLogResponse(BaseModel):
     request: GenerationRequestResponse
     classification: Optional[ClassificationLogResponse]
     ticket: Optional[GeneratedTicketResponse]
-
 
 # --- Existing Jira Endpoint ---
 @app.get("/simplified-jira-issues")
